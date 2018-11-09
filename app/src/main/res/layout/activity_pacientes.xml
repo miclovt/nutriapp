@@ -9,36 +9,35 @@
     <ListView
         android:id="@+id/lvpacientes"
         android:layout_width="match_parent"
-        android:layout_height="430dp"
+        android:layout_height="match_parent"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/añadir"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/button4"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginStart="29dp"
-        android:layout_marginLeft="29dp"
-        android:layout_marginTop="0dp"
-        android:text="añadir"
+
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="100dp"
+        android:layout_marginBottom="10dp"
         android:onClick="reg"
+        android:text="añadir"
         tools:layout_editor_absoluteX="278dp"
         tools:layout_editor_absoluteY="445dp" />
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/filtrar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="31dp"
-        android:layout_marginRight="31dp"
-        android:layout_marginBottom="18dp"
+        android:layout_toRightOf="@+id/añadir"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="-90dp"
         android:text="filtrar"
+        android:onClick="filtrar"
         tools:layout_editor_absoluteX="148dp"
         tools:layout_editor_absoluteY="447dp" />
 </RelativeLayout>

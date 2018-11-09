@@ -1,48 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/imglista"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="14dp"
-        app:srcCompat="@mipmap/ic_launcher_round"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="16dp" />
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:adjustViewBounds="false"
+        android:cropToPadding="false"
+        android:paddingBottom="10dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/imagenpro"
+        app:civ_border_color="#FFFFFF"
+        app:civ_border_width="1dp" />
 
-    <TextView
-        android:id="@+id/nomlista"
-        android:layout_width="230dp"
-        android:layout_height="29dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="104dp"
-        android:layout_marginLeft="104dp"
-        android:layout_marginTop="14dp"
-        android:text="NOMBRE"
-        android:textSize="20dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="50dp">
+        <TextView
+            android:id="@+id/nomlista"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="NOMBRE"
+            android:textSize="20dp" />
+        <TextView
+            android:id="@+id/edadlista"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="EDAD"
+            android:layout_marginTop="10dp"
+            android:textSize="15dp" />
 
-    <TextView
-        android:id="@+id/edadlista"
-        android:layout_width="230dp"
-        android:layout_height="29dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="105dp"
-        android:layout_marginLeft="105dp"
-        android:layout_marginTop="54dp"
-        android:text="EDAD"
-        android:textSize="15dp" />
-</RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginLeft="-50dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="10dp"
+
+        android:orientation="vertical"
+        android:layout_width="match_parent">
+        <ImageView
+            android:id="@+id/delete"
+            android:layout_width="40dp"
+            android:layout_height="30dp"
+            android:src="@drawable/nuevodel"
+
+            android:onClick="borrar"/>
+        <ImageView
+            android:id="@+id/edit"
+            android:layout_width="40dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/nuevoedit"
+
+            android:onClick="editar"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>

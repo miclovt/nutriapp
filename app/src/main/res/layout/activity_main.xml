@@ -4,63 +4,62 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     tools:context=".MainActivity">
 
-    <EditText
-        android:id="@+id/editText4"
-        android:layout_width="272dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="24dp"
-        android:layout_marginLeft="24dp"
-        android:layout_marginTop="23dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="ingrese nombre del paciente"
-         />
 
-    <ImageButton
-        android:id="@+id/imageButton7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/editText4"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="-2dp"
-        android:layout_marginEnd="25dp"
-        android:layout_marginRight="25dp"
-        android:onClick="pantalla"
-        app:srcCompat="@android:drawable/ic_menu_search" />
-
-    <ScrollView
+    <LinearLayout
+        android:id="@+id/cabecera"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="0dp">
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/editText4"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:hint="ingrese nombre del paciente"
+            android:inputType="textPersonName"
+            />
 
-    </ScrollView>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/editText4"
+            android:onClick="busqresult"
+            android:layout_gravity="center"
+            app:srcCompat="@android:drawable/ic_menu_search"
+            />
+
+    </LinearLayout>
+
 
     <ListView
-        android:layout_width="344dp"
-        android:layout_height="354dp"
-        android:layout_alignStart="@+id/editText4"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="86dp" />
-
-    <Button
-        android:id="@+id/button5"
+        android:id="@+id/listahoy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/_dynamic"
-        android:layout_alignBottom="@+id/_dynamic"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="97dp"
-        android:layout_marginTop="368dp"
-        android:layout_marginBottom="-62dp"
+        android:layout_below="@id/cabecera"
+        android:layout_marginBottom="80dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true"
         android:onClick="allpac"
+        android:layout_marginBottom="20dp"
         android:text="TODOS LOS PACIENTES" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:onClick="bor"
+        android:layout_marginBottom="20dp"
+        android:text="borrar" />
+
 
 </RelativeLayout>

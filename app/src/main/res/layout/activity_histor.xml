@@ -7,69 +7,80 @@
     tools:context=".Main2Activity">
 
     <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@mipmap/ic_launcher"
+        android:id="@+id/imageViewH"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/imagenpro"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
 
     <TextView
-        android:id="@+id/textView2"
-        android:layout_width="287dp"
+        android:id="@+id/nomH"
+        android:layout_width="wrap_content"
+        android:layout_toEndOf="@id/imageViewH"
         android:layout_height="25dp"
-        android:layout_alignEnd="@+id/textView3"
+        android:layout_alignEnd="@+id/sexedadH"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="11dp"
+        android:layout_margin="11dp"
         android:text="Ap. y nombres:"
+        android:textSize="20dp"
         tools:layout_editor_absoluteX="79dp"
         tools:layout_editor_absoluteY="7dp" />
 
     <TextView
-        android:id="@+id/textView3"
-        android:layout_width="288dp"
+        android:id="@+id/sexedadH"
+        android:textSize="20dp"
+        android:layout_width="wrap_content"
         android:layout_height="23dp"
-        android:layout_alignBottom="@+id/imageView"
-        android:layout_marginStart="9dp"
-        android:layout_marginBottom="0dp"
-        android:layout_toEndOf="@+id/imageView"
+
+        android:layout_alignBottom="@+id/imageViewH"
+
+        android:layout_margin="11dp"
+        android:layout_toEndOf="@+id/imageViewH"
         android:text="sexo:                edad:"
         tools:layout_editor_absoluteX="79dp"
         tools:layout_editor_absoluteY="39dp" />
 
     <ListView
-        android:layout_width="377dp"
-        android:layout_height="427dp"
-        android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="@+id/imageViewH"
+        android:layout_below="@id/imageViewH"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="0dp"
+
         android:layout_marginBottom="0dp"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="72dp" />
 
-    <ImageButton
-        android:id="@+id/imageButton2"
-        android:layout_width="wrap_content"
-        android:layout_height="54dp"
-        android:layout_alignTop="@+id/imageButton3"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginEnd="97dp"
-        android:layout_marginRight="97dp"
-        android:src="@android:drawable/stat_notify_more"
-        tools:layout_editor_absoluteX="310dp"
-        tools:layout_editor_absoluteY="451dp" />
 
-    <ImageButton
-        android:id="@+id/imageButton3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/textView2"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="447dp"
-        android:layout_marginEnd="16dp"
-        android:src="@android:drawable/btn_star_big_on"
-        tools:layout_editor_absoluteX="179dp"
-        tools:layout_editor_absoluteY="446dp" />
+
+    <ImageView
+        android:id="@+id/plus"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="100dp"
+        android:layout_marginBottom="30dp"
+        android:onClick="nuevahist"
+        android:cropToPadding="false"
+        app:srcCompat="@drawable/plus_icon"
+        tools:layout_editor_absoluteX="50dp"
+        tools:layout_editor_absoluteY="50dp" />
+
+    <ImageView
+        android:id="@+id/graf"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignTop="@id/plus"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="20dp"
+        android:onClick="graficar"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="25dp"
+        app:srcCompat="@drawable/graph_icon"
+        tools:layout_editor_absoluteX="50dp"
+        tools:layout_editor_absoluteY="50dp" />
 
 </RelativeLayout>

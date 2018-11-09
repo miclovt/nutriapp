@@ -6,15 +6,20 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.Nullable;
 
 public class base_de_datos extends SQLiteOpenHelper {
-    String creartablas="create table paciente(_id integer PRIMARY KEY AUTOINCREMENT,foto blob,nombre varchar(40),apellido varchar(40),genero varchar(20),fnac date);";
+    String creartablapacientes="create table paciente(_id integer PRIMARY KEY AUTOINCREMENT,foto blob,nombre varchar(40),apellido varchar(40),genero varchar(20),fnac date);" ;
+    String creartablaconsultas="create table consulta(_id integer PRIMARY KEY AUTOINCREMENT,idpac integer not null ,peso float,talla float,long float,FOREIGN KEY(idpac) REFERENCES paciente(_id));";
+
     public base_de_datos( Context context,  String name,SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
+
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
-        db.execSQL(creartablas);
+        db.execSQL("PRAGMA page_size=30000000");
+        db.execSQL("PRAGMA cache_size=30000000");
+        db.execSQL(creartablapacientes);
+        db.execSQL(creartablaconsultas);
     }
 
     @Override
