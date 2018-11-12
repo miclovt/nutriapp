@@ -3,52 +3,60 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".Main2Activity">
-
-    <ImageView
-        android:id="@+id/imageViewH"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:src="@drawable/imagenpro"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
-
-    <TextView
-        android:id="@+id/nomH"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/cabeza"
         android:layout_width="wrap_content"
-        android:layout_toEndOf="@id/imageViewH"
-        android:layout_height="25dp"
-        android:layout_alignEnd="@+id/sexedadH"
-        android:layout_alignParentTop="true"
-        android:layout_margin="11dp"
-        android:text="Ap. y nombres:"
-        android:textSize="20dp"
-        tools:layout_editor_absoluteX="79dp"
-        tools:layout_editor_absoluteY="7dp" />
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/imageViewH"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/imagenpro"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/nomH"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="5dp"
+                android:text="Ap. y nombres:"
+                android:textSize="17dp"
+                />
 
-    <TextView
-        android:id="@+id/sexedadH"
-        android:textSize="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="23dp"
+            <TextView
+                android:id="@+id/sexH"
+                android:textSize="17dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="sexo:"
+                />
+            <TextView
+                android:id="@+id/edadH"
+                android:textSize="17dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="sexo:                edad:"
+                />
+        </LinearLayout>
 
-        android:layout_alignBottom="@+id/imageViewH"
+    </LinearLayout>
 
-        android:layout_margin="11dp"
-        android:layout_toEndOf="@+id/imageViewH"
-        android:text="sexo:                edad:"
-        tools:layout_editor_absoluteX="79dp"
-        tools:layout_editor_absoluteY="39dp" />
 
     <ListView
+        android:id="@+id/listahist"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="@+id/imageViewH"
-        android:layout_below="@id/imageViewH"
+        android:layout_alignParentTop="@+id/cabeza"
+        android:layout_below="@id/cabeza"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="0dp"
-
         android:layout_marginBottom="0dp"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="72dp" />
@@ -74,9 +82,9 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignTop="@id/plus"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="20dp"
-        android:onClick="graficar"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:onClick="graficarhist"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="25dp"
         app:srcCompat="@drawable/graph_icon"

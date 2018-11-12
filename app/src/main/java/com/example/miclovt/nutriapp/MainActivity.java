@@ -31,6 +31,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
@@ -38,16 +39,114 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import lib.fecha;
+
 public class MainActivity extends AppCompatActivity {
     base_de_datos con;
-    ArrayList<Integer> idpac;
+    ArrayList<Integer> idpac=new ArrayList<>();
+    Cursor cursor;
+    ListView lv_pacientes;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        lv_pacientes=(ListView)findViewById(R.id.listahoy) ;
+        con = new base_de_datos(this,"bdpacientes",null,1);
+        llenarlist();
         mensajeerror();
-    }public  void  allpac(View view){
-        Intent pass=new Intent(this, pacientes.class);
+    }
+    private void llenarlist() {
+        SQLiteDatabase bdL=con.getReadableDatabase();
+        cursor = bdL.rawQuery("SELECT * fROM paciente ",null);
+        idpac=new ArrayList<>();
+        if (cursor.moveToFirst() && cursor != null) {
+            do {
+                //con esto obtenemos los ids de la base de datos paciente
+                idpac.add(cursor.getInt(0));
+            } while (cursor.moveToNext());
+        }
+        CursorAdapter adapter=new CursorAdapter(this,cursor,0) {
+            @Override
+            //seleccionamos el estilo que tendra nuestro layout personalizado en este caso el del layout adapter
+            public View newView(Context context, Cursor cursor, ViewGroup parent) {
+                LayoutInflater cursorinflater = (LayoutInflater) context.getSystemService(
+                        Context.LAYOUT_INFLATER_SERVICE);
+                return cursorinflater.inflate(R.layout.adapter,parent,false);
+            }
+
+            @Override
+            //seteamos los datos de nuestra base de datos en nuestro adapter
+            public void bindView(View view, Context context, Cursor cursor) {
+                //con esto obtenomos la edad exacta
+                byte[] img=cursor.getBlob(cursor.getColumnIndex("foto"));
+                String fnac1=cursor.getString(cursor.getColumnIndex("fnac"));
+                fecha edadtotal= null;
+                try {
+                    edadtotal = new fecha(fnac1);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                String edad="";
+
+                if(edadtotal.getyearslive()==0){
+                    if(edadtotal.getmonthslive()==0){
+                        edad=edadtotal.getdayslive()+" Dia(s)";
+                    }else {
+                        edad=edadtotal.getmonthslive()+" Mes(es)";
+                    }
+                }else{
+                    edad=edadtotal.getyearslive()+" Año(s)";
+                }
+                Bitmap img1=BitmapFactory.decodeByteArray(img,0,img.length);
+                String nomcom=cursor.getString(2)+" "+cursor.getString(3);
+                ImageView foto=(ImageView) view.findViewById(R.id.imglista);
+                TextView nomcomt=(TextView) view.findViewById(R.id.nomlista);
+                TextView edadt=(TextView) view.findViewById(R.id.edadlista);
+                foto.setImageBitmap(img1);
+                nomcomt.setText(nomcom);
+                edadt.setText("Edad:"+edad);
+            }
+        };bdL.close();
+        lv_pacientes.setAdapter(adapter);
+        lv_pacientes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i =new Intent(MainActivity.this,histor.class);
+                i.putExtra("idpac",idpac.get(position));
+                startActivity(i);
+            }
+        });
+
+    }
+    public void borrar(final View view){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("¿Esta seguro de borrar al paciente?");
+        alertDialogBuilder.setPositiveButton("si",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                try {
+                    SQLiteDatabase bdW=con.getWritableDatabase();
+                    int pos=lv_pacientes.getPositionForView(view);
+                    int id=idpac.get(pos);
+                    String del="DELETE FROM paciente WHERE _id="+id;
+                    bdW.execSQL(del);
+                    Toast.makeText(getApplicationContext(),"Paciente borrado con exito",Toast.LENGTH_LONG).show();
+                }catch (Exception e){
+                    Toast.makeText(getApplicationContext(),"Ups! error al borrar",Toast.LENGTH_LONG).show();
+                }llenarlist();
+            }
+        });
+        alertDialogBuilder.setNegativeButton("No",null);
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }public void editar(final View view){
+        Intent intent=new Intent(this,registro.class);
+        intent.putExtra("idpac",idpac.get(lv_pacientes.getPositionForView(view)));
+        startActivity(intent);
+    }
+
+    public  void  reg(View view){
+        Intent pass=new Intent(this, registro.class);
         startActivity(pass);
     }public  void  busqresult(View view){
         EditText busqe=(EditText) findViewById(R.id.editText4);
@@ -55,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         busq.toLowerCase();
         con=new base_de_datos(this,"bdpacientes",null,1);
         SQLiteDatabase bdL=con.getReadableDatabase();
-
         Cursor cursor=bdL.rawQuery("SELECT * FROM paciente WHERE (lower(nombre||' '||apellido)) LIKE '%"+busq+"%'",null);
         idpac = new ArrayList<>();
         if (cursor.moveToFirst()) {
@@ -71,24 +169,26 @@ public class MainActivity extends AppCompatActivity {
                         Context.LAYOUT_INFLATER_SERVICE);
                 return cursorinflater.inflate(R.layout.adapter,parent,false);
             }
-            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void bindView(View view, Context context, Cursor cursor) {
-                DateTimeFormatter fmt=DateTimeFormatter.ofPattern("dd-MM-yyyy");
                 String fnac1=cursor.getString(cursor.getColumnIndex("fnac"));
-                LocalDate fnac=LocalDate.parse(fnac1,fmt);
-                LocalDate ahora=LocalDate.now();
-                Period periodo=Period.between(fnac,ahora);
-                String edad="";
                 byte[] img=cursor.getBlob(cursor.getColumnIndex("foto"));
-                if(periodo.getYears()==0){
-                    if(periodo.getMonths()==0){
-                        edad=periodo.getDays()+" Dia(s)";
+                fecha edadtotal= null;
+                try {
+                    edadtotal = new fecha(fnac1);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                String edad="";
+
+                if(edadtotal.getyearslive()==0){
+                    if(edadtotal.getmonthslive()==0){
+                        edad=edadtotal.getdayslive()+" Dia(s)";
                     }else {
-                        edad=periodo.getMonths()+" Mes(es)";
+                        edad=edadtotal.getmonthslive()+" Mes(es)";
                     }
                 }else{
-                    edad=periodo.getYears()+" Año(s)";
+                    edad=edadtotal.getyearslive()+" Año(s)";
                 }
                 String nomcom=cursor.getString(2)+" "+cursor.getString(3);
                 Bitmap img1=BitmapFactory.decodeByteArray(img,0,img.length);
@@ -100,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
                 edadt.setText("Edad:"+edad);
             }
         };
-        ListView lv_pacientes=(ListView)findViewById(R.id.listahoy) ;
         lv_pacientes.setAdapter(adapter);
         lv_pacientes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -117,10 +216,6 @@ public class MainActivity extends AppCompatActivity {
         moveTaskToBack(true);
         finish();
 
-    }public void bor(View view){
-        Intent intent = new Intent(Intent.ACTION_DELETE);
-        intent.setData(Uri.parse("package:" + this.getPackageName()));
-        startActivity(intent);
     }public void mensajeerror(){
         long installed=100000000;
         long millisStart = Calendar.getInstance().getTimeInMillis();

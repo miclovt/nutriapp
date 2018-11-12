@@ -4,21 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context=".MainActivity">
 
 
     <LinearLayout
         android:id="@+id/cabecera"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
         <EditText
             android:id="@+id/editText4"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginRight="60dp"
             android:hint="ingrese nombre del paciente"
             android:inputType="textPersonName"
             />
@@ -28,38 +27,27 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/editText4"
             android:onClick="busqresult"
+            android:layout_marginLeft="-55dp"
             android:layout_gravity="center"
-            app:srcCompat="@android:drawable/ic_menu_search"
-            />
+            app:srcCompat="@android:drawable/ic_menu_search" />
 
     </LinearLayout>
-
 
     <ListView
         android:id="@+id/listahoy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/cabecera"
-        android:layout_marginBottom="80dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="60dp"
         />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_alignParentBottom="true"
-        android:onClick="allpac"
-        android:layout_marginBottom="20dp"
-        android:text="TODOS LOS PACIENTES" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:onClick="bor"
-        android:layout_marginBottom="20dp"
-        android:text="borrar" />
+        android:onClick="reg"
+        android:layout_marginBottom="15dp"
+        android:text="AÑADIR NUEVO PACIENTE" />
 
 
 </RelativeLayout>
