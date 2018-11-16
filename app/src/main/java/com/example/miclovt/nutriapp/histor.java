@@ -5,13 +5,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,8 +18,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
@@ -30,7 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.PointsGraphSeries;
@@ -51,10 +49,14 @@ public class histor extends AppCompatActivity {
     ArrayList <String> nomtablas=new ArrayList<>();
     com.jjoe64.graphview.GraphView plot;
     Double x=0.0,y=0.0;
-    int edadmes=0;
-    int pos =0,id;
+    fecha fnaci=null;
+    int pos =0,id=0;
+    int not=0;
+    int meses=0;
     String genero="";
+    String times="";
     ListView listahist;
+    double peso=0,talla=0,longi=0;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_histor);
@@ -66,9 +68,123 @@ public class histor extends AppCompatActivity {
         llenar(id,bdL);
         llenarlista(id,bdL);
         bdL.close();
+        listahist=findViewById(R.id.listahist);
+        listahist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                final View graflayout= View.inflate(v.getContext(), R.layout.graficas, null);
+                final AlertDialog.Builder construirdialogo= new AlertDialog.Builder(v.getContext());
+                plot=graflayout.findViewById(R.id.graph);
+                construirdialogo.setView(R.layout.graficas);
+                final TextView titulo=graflayout.findViewById(R.id.titulografica);
+                final TextView descri=graflayout.findViewById(R.id.prescri);
+                final TextView desvi=graflayout.findViewById(R.id.desviacion);
+                desvi.setTextColor(Color.rgb(2,119,189));
+                descri.setTextColor(Color.rgb(2,119,189));
+                SQLiteDatabase bdL=con.getReadableDatabase();
+                Cursor cursor = bdL.rawQuery("SELECT p.fnac,c.fecha,c.peso,c.talla,c.long fROM consulta c,paciente p WHERE p._id="+getIntent().getIntExtra("idpac",0)+" and c._id="+idh.get(position),null);
+                fecha nac=null;
+                if(cursor.moveToFirst()){
+                    try {
+                        nac=new fecha(cursor.getString(0));
+                        SimpleDateFormat formato=new SimpleDateFormat("dd-MM-yyyy");
+                        Date time=formato.parse(cursor.getString(1));
+                        Calendar c=Calendar.getInstance();
+                        c.setTime(time);
+                        times=c.get(Calendar.DAY_OF_MONTH)+"-"+(c.get(Calendar.MONTH)+1)+"-"+c.get(Calendar.YEAR);
+                        meses=nac.getmonthslive(times);
+                    } catch (ParseException e) {
+                        Toast.makeText(histor.this, "error parse", Toast.LENGTH_SHORT).show();
+                    }peso=cursor.getDouble(2);
+                    talla=cursor.getDouble(3);
+                    longi=cursor.getDouble(4);
+                    if(talla!=0){
+                        llenar(getIntent().getIntExtra("idpac",0),con.getReadableDatabase());
+                        llenargraficas(titulo,desvi,descri,meses,talla,peso);
+                    }else {
+                        nomtablas=new ArrayList<>();
+                        tablas=new ArrayList<>();
+                        try {
+                            if(nac.getmonthslive(times)>=0 && nac.getmonthslive(times)<=23){
+                                nomtablas.add("longitud para la edad");
+                                nomtablas.add("peso para la edad");
+                                nomtablas.add("peso para la longitud");
+                                if(genero.equals("masculino")){
+                                    tablas.add(ope.getLE0_2nino());
+                                    tablas.add(ope.getPE0_2nino());
+                                    tablas.add(ope.getPL0_2nino());
+                                }else{
+                                    tablas.add(ope.getLE0_2nina());
+                                    tablas.add(ope.getPE0_2nina());
+                                    tablas.add(ope.getPL0_2nina());
+                                }
+                            }
+                        } catch (ParseException e) {
+                            Toast.makeText(histor.this, "PARSEEEEEEROOOOO", Toast.LENGTH_SHORT).show();
+                        }
+                        llenargraficas(titulo,desvi,descri,meses,longi,peso);
+
+                    }
+                }bdL.close();
+                construirdialogo.setPositiveButton("siguiente",null);
+                construirdialogo.setNegativeButton("Anterior",null);
+                final AlertDialog alertDialog = construirdialogo.create();
+                alertDialog.setView(graflayout);
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+                        Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                        button.setOnClickListener(new View.OnClickListener() {
+
+                            @Override
+                            public void onClick(View view) {
+
+
+                                        if(pos+1<tablas.size()){
+                                            pos++;
+                                        }else{
+                                            pos=0;
+                                        }plot.removeAllSeries();
+                                        if(talla!=0){
+                                            llenargraficas(titulo,desvi,descri,meses,talla,peso);
+                                        }else {
+                                            llenargraficas(titulo,desvi,descri,meses,longi,peso);
+                                        }
+
+
+
+                            }
+                        });
+                        Button button1= ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
+                        button1.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // recorremos las tablas hacia atras
+
+
+                                        if(pos-1>=0){
+                                            pos--;
+                                        }else{
+                                            pos=tablas.size()-1;
+                                        }plot.removeAllSeries();
+                                    if(talla!=0){
+                                        llenargraficas(titulo,desvi,descri,meses,talla,peso);
+                                    }else {
+                                        llenargraficas(titulo,desvi,descri,meses,longi,peso);
+                                    }
+                                    }
+
+
+                        });
+                    }
+                });
+                alertDialog.show();
+
+            }
+        });
     }
     private void llenarlista(int id, SQLiteDatabase bdL) {
-        Cursor cursor = bdL.rawQuery("SELECT * fROM consulta WHERE idpac="+id,null);
+        Cursor cursor = bdL.rawQuery("SELECT * fROM consulta WHERE idpac="+id+" ORDER BY fecha",null);
         if(cursor.moveToFirst()){
             listahist=findViewById(R.id.listahist);
             CursorAdapter adapter=new CursorAdapter(this,cursor,0) {
@@ -95,14 +211,14 @@ public class histor extends AppCompatActivity {
                         Calendar c=Calendar.getInstance();
                         c.setTime(fechad);
                         String fec=c.get(Calendar.DAY_OF_MONTH)+"-"+(c.get(Calendar.MONTH)+1)+"-"+c.get(Calendar.YEAR);
-                        fechat.setText(fec);
+                        fechat.setText("FECHA: "+fec);
                         TextView pesot=view.findViewById(R.id.pesocon);
-                        pesot.setText(peso+"");
+                        pesot.setText("PESO(Kg): "+peso);
                         TextView lott=view.findViewById(R.id.lotcon);
                         if(talla==0){
-                            lott.setText(longi+"");
+                            lott.setText("LONGITUD(cm): "+longi);
                         }else{
-                            lott.setText(talla+"");
+                            lott.setText("TALLA(cm): "+talla);
                         }
                     }catch (Exception e){
 
@@ -116,6 +232,8 @@ public class histor extends AppCompatActivity {
     }
 
     private void llenar(int id, SQLiteDatabase bdL) {
+        nomtablas=new ArrayList<>();
+        tablas=new ArrayList<>();
         Cursor cursor = bdL.rawQuery("SELECT * fROM paciente WHERE _id="+id,null);
         TextView nom=(TextView)findViewById(R.id.nomH);
         TextView sexo=(TextView)findViewById(R.id.sexH);
@@ -147,7 +265,7 @@ public class histor extends AppCompatActivity {
             sexo.setText("Sexo:"+cursor.getString(cursor.getColumnIndex("genero")));
             edaaad.setText("Edad:"+edad);
             i.setImageBitmap(img1);
-            edadmes=(int) edadtotal.getmonthslive();
+            fnaci=edadtotal;
             if(edadtotal.getmonthslive()>=0 && edadtotal.getmonthslive()<=23){
                 nomtablas.add("longitud para la edad");
                 nomtablas.add("peso para la edad");
@@ -175,16 +293,24 @@ public class histor extends AppCompatActivity {
         }
     }
 
-    public void  nuevahist(View cont){
+    public void  nuevahist(View cont) throws ParseException {
         final View popupExerciseStatisticView = View.inflate(cont.getContext(), R.layout.alertconsulta, null);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(cont.getContext());
         alertDialogBuilder.setView(R.layout.alertconsulta);
         Button guardar=popupExerciseStatisticView.findViewById(R.id.guardar);
-        final Button graficar=popupExerciseStatisticView.findViewById(R.id.graficas);
+        final Button graficarx=popupExerciseStatisticView.findViewById(R.id.graficas);
         Button calcular=popupExerciseStatisticView.findViewById(R.id.idcalcular);
         TextView pot=popupExerciseStatisticView.findViewById(R.id.tallaolong),peso=popupExerciseStatisticView.findViewById(R.id.textopeso);
+        final EditText diac=popupExerciseStatisticView.findViewById(R.id.diac);
+        final EditText mesc=popupExerciseStatisticView.findViewById(R.id.mesc);
+        final EditText anioc=popupExerciseStatisticView.findViewById(R.id.anioc);
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(fahora());
+        diac.setText(calendar.get(Calendar.DAY_OF_MONTH)+"");
+        mesc.setText((calendar.get(Calendar.MONTH)+1)+"");
+        anioc.setText(calendar.get(Calendar.YEAR)+"");
         peso.setText("Introduzca el peso (Kg):");
-        if(edadmes>=0 && edadmes<=23){
+        if(fnaci.getmonthslive()>=0 && fnaci.getmonthslive()<=23){
             pot.setText("Introduzca la longitud (cm):");
         }else{
             pot.setText("Introduzca la talla (cm):");
@@ -197,8 +323,24 @@ public class histor extends AppCompatActivity {
                     EditText ye=popupExerciseStatisticView.findViewById(R.id.editpeso);
                     x=Double.parseDouble(xe.getText().toString());
                     y=Double.parseDouble(ye.getText().toString());
-                    graficar.setTextColor(Color.rgb(0,130,0));
-                    graficar.startAnimation(AnimationUtils.loadAnimation(v.getContext(),R.anim.milkshake));
+                    AlertDialog.Builder selecnot=new AlertDialog.Builder(v.getContext());
+                    selecnot.setMessage("Que notacion usara?");
+                    selecnot.setPositiveButton("NOTACION OMS", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            not=0;
+                        }
+                    });
+                    selecnot.setNegativeButton("NOTACIOM MSD", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            not=1;
+                        }
+                    });
+                    AlertDialog alertDialog = selecnot.create();
+                    alertDialog.show();
+                    graficarx.setTextColor(Color.rgb(0,130,0));
+                    graficarx.startAnimation(AnimationUtils.loadAnimation(v.getContext(),R.anim.milkshake));
                 }catch (Exception e){
                     Toast.makeText(histor.this, "datos erroneos", Toast.LENGTH_SHORT).show();
                 }
@@ -207,17 +349,21 @@ public class histor extends AppCompatActivity {
         guardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(x!=0 && y!=0){
+
                     try {
+                        EditText xe=popupExerciseStatisticView.findViewById(R.id.edtitallaolong);
+                        EditText ye=popupExerciseStatisticView.findViewById(R.id.editpeso);
+                        x=Double.parseDouble(xe.getText().toString());
+                        y=Double.parseDouble(ye.getText().toString());
                         SimpleDateFormat  format=new SimpleDateFormat("dd-MM-yyyy");
-                        Date fechahoy=fahora();
+                        Date fechacon=format.parse(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString());
                         SQLiteDatabase bdW=con.getWritableDatabase();
                         String sql="INSERT INTO  consulta (idpac,fecha,peso,talla,long) VALUES (?,?,?,?,?)";
                         SQLiteStatement insert = bdW.compileStatement(sql);
-                        if(edadmes>=0 && edadmes<=23){
+                        if(fnaci.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString())>=0 && fnaci.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString())<=23){
                             insert.clearBindings();
                             insert.bindDouble(1,id);
-                            insert.bindString(2,format.format(fechahoy));
+                            insert.bindString(2,format.format(fechacon));
                             insert.bindDouble(3,y);
                             insert.bindDouble(4,0);
                             insert.bindDouble(5,x);
@@ -225,24 +371,25 @@ public class histor extends AppCompatActivity {
                         }else {
                             insert.clearBindings();
                             insert.bindDouble(1,id);
-                            insert.bindString(2,format.format(fechahoy));
+                            insert.bindString(2,format.format(fechacon));
                             insert.bindDouble(3,y);
                             insert.bindDouble(4,x);
                             insert.bindDouble(5,0);
                             insert.executeInsert();
                         }Toast.makeText(histor.this, "GUARDADO", Toast.LENGTH_SHORT).show();
-                    }catch (Exception e){
-                        Toast.makeText(histor.this, "Ups!, error al guardar", Toast.LENGTH_SHORT).show();
-                    }Intent intent=new Intent(getApplication(),histor.class);
+                        bdW.close();
+                    }catch (ParseException e){
+                        Toast.makeText(histor.this, "Datos invalidos", Toast.LENGTH_SHORT).show();
+                    }catch (SQLException e){
+                        Toast.makeText(histor.this, "Ups! error al guardar", Toast.LENGTH_SHORT).show();
+                    }
+                    Intent intent=new Intent(getApplication(),histor.class);
                     intent.putExtra("idpac",id);
                     startActivity(intent);
-
-                }else{
-                    Toast.makeText(histor.this, "falta completar datos", Toast.LENGTH_SHORT).show();
                 }
-            }
+
         });
-        graficar.setOnClickListener(new View.OnClickListener() {
+        graficarx.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(x!=0 && y!=0){
@@ -255,10 +402,17 @@ public class histor extends AppCompatActivity {
                     final TextView desvi=popupExerciseStatisticView.findViewById(R.id.desviacion);
                     desvi.setTextColor(Color.rgb(2,119,189));
                     descri.setTextColor(Color.rgb(2,119,189));
-                    if(edadmes>=0 && edadmes <=23){
-                        llenargraficas(titulo,desvi,descri);
-                    }else{
-                        llenargraficas(titulo,desvi,descri);
+                    SQLiteDatabase bdL=con.getReadableDatabase();
+                    final Cursor cursor = bdL.rawQuery("SELECT * fROM paciente WHERE _id="+id,null);
+
+                    if(cursor.moveToFirst()){
+                        try {
+                            fecha edad=new fecha(cursor.getString(cursor.getColumnIndex("fnac")));
+                            int edadenmesx= edad.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString());
+                            llenargraficas(titulo,desvi,descri,edadenmesx,x,y);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
                     }
                     alertDialogBuilder.setPositiveButton("siguiente",null);
                     alertDialogBuilder.setNegativeButton("Anterior",null);
@@ -272,13 +426,21 @@ public class histor extends AppCompatActivity {
 
                                 @Override
                                 public void onClick(View view) {
-                                    // Recorremos las tablas hacia adelante
-                                    if(pos+1<tablas.size()){
-                                        pos++;
-                                    }else{
-                                        pos=0;
-                                    }plot.removeAllSeries();
-                                    llenargraficas(titulo,desvi,descri);
+                                    if(cursor.moveToFirst()){
+                                        try {
+                                            fecha edad=new fecha(cursor.getString(cursor.getColumnIndex("fnac")));
+                                            int edadenmesx= edad.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString());
+                                            if(pos+1<tablas.size()){
+                                                pos++;
+                                            }else{
+                                                pos=0;
+                                            }plot.removeAllSeries();
+                                            llenargraficas(titulo,desvi,descri,edadenmesx,x,y);
+                                        } catch (ParseException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+
                                 }
                             });
                             Button button1= ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
@@ -286,12 +448,20 @@ public class histor extends AppCompatActivity {
                                 @Override
                                 public void onClick(View view) {
                                     // recorremos las tablas hacia atras
-                                    if(pos-1>=0){
-                                        pos--;
-                                    }else{
-                                        pos=tablas.size()-1;
-                                    }plot.removeAllSeries();
-                                    llenargraficas(titulo,desvi,descri);
+                                    if(cursor.moveToFirst()){
+                                        try {
+                                            fecha edad=new fecha(cursor.getString(cursor.getColumnIndex("fnac")));
+                                            int edadenmesx= edad.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString());
+                                            if(pos-1>=0){
+                                                pos--;
+                                            }else{
+                                                pos=tablas.size()-1;
+                                            }plot.removeAllSeries();
+                                            llenargraficas(titulo,desvi,descri,edadenmesx,x,y);
+                                        } catch (ParseException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 }
                             });
                         }
@@ -359,12 +529,15 @@ public class histor extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Borrado con exito",Toast.LENGTH_LONG).show();
                 }catch (Exception e){
                     Toast.makeText(getApplicationContext(),"Ups! error al borrar",Toast.LENGTH_LONG).show();
-                }llenarlista(id,con.getReadableDatabase());
+                }Intent intent=new Intent(getApplicationContext(),histor.class);
+                intent.putExtra("idpac",id);
+                startActivity(intent);
             }
         });
         alertDialogBuilder.setNegativeButton("No",null);
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+
     }
     public void mensajeerror(){
         long installed=100000000;
@@ -381,56 +554,92 @@ public class histor extends AppCompatActivity {
             AlertDialog alertDialog = alertDialogBuilder.create();
             alertDialog.show();
         }
-    }public void llenargraficas(TextView titulo,TextView desvi,TextView descri){
-        DecimalFormat num=new DecimalFormat("#,##");
-        if(edadmes>=0 && edadmes<=23){
-            switch (pos){
-                case 0: graficar(tablas.get(pos),plot,edadmes,x,"meses","longitud");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.long_edad02(edadmes,x,genero));descri.setText(prescripcion(0,ope.long_edad02(edadmes,x,genero))); break;
-                case 1: graficar(tablas.get(pos),plot,edadmes,y,"meses","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_edad02(edadmes,y,genero));descri.setText(prescripcion(1,ope.peso_edad02(edadmes,y,genero))); break;
-                case 2: graficar(tablas.get(pos),plot,x,y,"longitud","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_long02(x,y,genero));descri.setText(prescripcion(1,ope.peso_long02(x,y,genero))); break;
-                default: break;
+    }public void llenargraficas(TextView titulo, TextView desvi, TextView descri, int edadenmesx,double x,double y){
+        try{
+            if(edadenmesx>=0 && edadenmesx<=23){
+                switch (pos){
+                    case 0: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","longitud");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.long_edad02(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.long_edad02(edadenmesx,x,genero))); break;
+                    case 1: graficar(tablas.get(pos),plot,edadenmesx,y,"meses","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_edad02(edadenmesx,y,genero));descri.setText(prescripcion(1,ope.peso_edad02(edadenmesx,y,genero))); break;
+                    case 2: graficar(tablas.get(pos),plot,x,y,"longitud","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_long02(x,y,genero));descri.setText(prescripcion(1,ope.peso_long02(x,y,genero))); break;
+                    default: break;
+                }
+            }if(edadenmesx>=24 && edadenmesx<=60){
+                switch (pos){
+                    case 0: graficar(tablas.get(pos),plot,x,y,"talla","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_talla25(x,y,genero));descri.setText(prescripcion(1,ope.peso_talla25(x,y,genero))); break;
+                    case 1: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad25(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad25(edadenmesx,x,genero))); break;
+                    default: break;
+                }
+            }if(edadenmesx>60){
+                Toast.makeText(this, "LA APLICACION SOLO FUNCIONA PARA NIÑOS DE 0 A 5 AÑOS", Toast.LENGTH_LONG).show();
             }
-        }if(edadmes>=24 && edadmes<=60){
-            switch (pos){
-                case 0: graficar(tablas.get(pos),plot,x,y,"talla","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_talla25(x,y,genero));descri.setText(prescripcion(0,ope.peso_talla25(x,y,genero))); break;
-                case 1: graficar(tablas.get(pos),plot,edadmes,x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad25(edadmes,x,genero));descri.setText(prescripcion(1,ope.talla_edad25(edadmes,x,genero))); break;
-                default: break;
-            }
-        }if(edadmes>60){
-            Toast.makeText(this, "LA APLICACION SOLO FUNCIONA PARA NIÑOS DE 0 A 5 AÑOS", Toast.LENGTH_LONG).show();
+        }catch (Exception e){
+            Toast.makeText(this, "los datos son invalidos debido al cambio de fecha de nacimiento,borre los datos", Toast.LENGTH_SHORT).show();
         }
+
     }public String prescripcion(int sw,double desv){
         DecimalFormat num=new DecimalFormat("#,##");
         desv=Double.parseDouble(num.format(desv));
-        switch (sw){
-            case 0:{
-                if(desv<=-1 && desv>-2){
-                    return "RETRASO DE CRECIMIENTO LEVE";
-                }if(desv<=-2 && desv>-3){
-                    return "RETRASO DE CRECIMIENTO MODERADO";
-                }if(desv<=-3){
-                    return "RETRASO DE CRECIMIENTO SEVERO";
-                }if(desv>1){
-                    return "TALLA ALTA";
-                }if(desv>=-2 && desv<=2){
-                    return "TALLA NORMAL";
-                }
-            };
-            case 1:{
-                if(desv>3){
-                    return "OBESIDAD";
-                }if(desv<=3 && desv>2){
-                    return "SOBREPESO";
-                }if(desv>=-2 && desv<=2){
-                    return "PESO NORMAL";
-                }if(desv<-2 && desv>=-3){
-                    return "DESNUTRICION AGUDA MODERADA";
-                }if(desv<-3){
-                    return "DESNUTRICION AGUDA GRAVE Y/O ANEMIA GRAVE";
-                }
-            };
-            default: break;
+        if(not==0){
+            switch (sw){
+                case 0:{
+                    if(desv<=-1 && desv>-2){
+                        return "RETRASO DE CRECIMIENTO LEVE";
+                    }if(desv<=-2 && desv>-3){
+                        return "RETRASO DE CRECIMIENTO MODERADO";
+                    }if(desv<=-3){
+                        return "RETRASO DE CRECIMIENTO SEVERO";
+                    }if(desv>1){
+                        return "TALLA ALTA";
+                    }if(desv>=-2 && desv<=2){
+                        return "TALLA NORMAL";
+                    }
+                };
+                case 1:{
+                    if(desv>2){
+                        return "OBESIDAD";
+                    }if(desv<=2 && desv>1){
+                        return "SOBREPESO";
+                    }if(desv>-1 && desv<=1){
+                        return "PESO NORMAL";
+                    }if(desv>-2 && desv<=-1){
+                        return "DESNUTRICION LEVE";
+                    }if(desv>-3 && desv<=-2){
+                        return "DESNUTRICION MODERADA";
+                    }
+                    if(desv<=-3){
+                        return "DESNUTRICION SEVERA";
+                    }
+                };
+                default: break;
+            }
+        }else{
+            switch (sw){
+                case 0:{
+                    if(desv<-2){
+                        return "TALLA BAJA";
+                    }if(desv>2){
+                        return "TALLA ALTA";
+                    }if(desv>=-2 && desv<=2){
+                        return "TALLA NORMAL";
+                    }
+                };
+                case 1:{
+                    if(desv>3){
+                        return "OBESIDAD";
+                    }if(desv<=3 && desv>2){
+                        return "SOBREPESO";
+                    }if(desv>=-2 && desv<=2){
+                        return "PESO NORMAL";
+                    }if(desv<-2 && desv>=-3){
+                        return "DESNUTRICION AGUDA MODERADA";
+                    }if(desv<-3){
+                        return "DESNUTRICION AGUDA GRAVE Y/O ANEMIA GRAVE";
+                    }
+                };
+                default: break;
+            }
         }
+
         return "";
     }public Date fahora() throws ParseException {
         SimpleDateFormat formato=new SimpleDateFormat("dd-MM-yyyy");
@@ -443,5 +652,10 @@ public class histor extends AppCompatActivity {
 
     public void graficarhist(View view) {
         Toast.makeText(this, "FUNCION NO DISPONIBLE POR EL MOMENTO", Toast.LENGTH_LONG).show();
+    }
+    public void editar(final View view){
+        Intent intent=new Intent(this,registro.class);
+        intent.putExtra("idpac",getIntent().getIntExtra("idpac",0));
+        startActivity(intent);
     }
 }

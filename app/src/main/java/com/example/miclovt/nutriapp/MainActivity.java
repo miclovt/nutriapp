@@ -1,5 +1,6 @@
 package com.example.miclovt.nutriapp;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,9 +9,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,8 +37,12 @@ import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.Period;
@@ -54,7 +66,85 @@ public class MainActivity extends AppCompatActivity {
         con = new base_de_datos(this,"bdpacientes",null,1);
         llenarlist();
         mensajeerror();
+        Button buttonRequest = findViewById(R.id.button);
+        buttonRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    requestStoragePermission(0);
+                }if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    requestStoragePermission(1);
+                }
+                try {
+
+                    final String inFileName = getDatabasePath("bdpacientes").getAbsolutePath();
+                    File dbFile = new File(inFileName);
+
+                    String outFileName = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"database_copy.db";
+                    File salida=new File(outFileName);
+                    InputStream in = new FileInputStream(dbFile);
+                    OutputStream out = new FileOutputStream(salida);
+
+                    // Copy the bits from instream to outstream
+                    byte[] buf = new byte[1024];
+                    int len;
+                    while ((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
+                    in.close();
+                    out.close();
+
+                }catch (Exception p){
+
+                    if(new File(getDatabasePath("bdpacientes").getPath()).exists())
+                        Toast.makeText(MainActivity.this, getDatabasePath("bdpacientes.db").getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+    }private void requestStoragePermission(final int i) {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission needed")
+                    .setMessage("This permission is needed because of this and that")
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if(i==0)
+                                ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                            else
+                                ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                        }
+                    })
+                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create().show();
+
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1)  {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission GRANTED", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Permission DENIED", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     private void llenarlist() {
         SQLiteDatabase bdL=con.getReadableDatabase();
         cursor = bdL.rawQuery("SELECT * fROM paciente ",null);
@@ -139,10 +229,6 @@ public class MainActivity extends AppCompatActivity {
         alertDialogBuilder.setNegativeButton("No",null);
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
-    }public void editar(final View view){
-        Intent intent=new Intent(this,registro.class);
-        intent.putExtra("idpac",idpac.get(lv_pacientes.getPositionForView(view)));
-        startActivity(intent);
     }
 
     public  void  reg(View view){

@@ -200,12 +200,15 @@ public class registro extends AppCompatActivity {
                     bdW.close();
                     if(des==1){
                         Toast.makeText(this, "editado correctamente", Toast.LENGTH_SHORT).show();
+                        Intent intent=new Intent(this,histor.class);
+                        intent.putExtra("idpac",idpac);
+                        startActivity(intent);
                     }else {
                         Toast.makeText(this, "se adiciono correctamente", Toast.LENGTH_SHORT).show();
+                        Intent intent=new Intent(this,MainActivity.class);
+                        startActivity(intent);
                     }
 
-                    Intent intent=new Intent(this,MainActivity.class);
-                    startActivity(intent);
                 }catch (Exception e) {
                     Toast.makeText(this, "Ups hubo un problema y la adicion no se completo", Toast.LENGTH_SHORT).show();
                 }
