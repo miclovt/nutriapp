@@ -56,7 +56,7 @@ public class histor extends AppCompatActivity {
     String genero="";
     String times="";
     ListView listahist;
-    double peso=0,talla=0,longi=0;
+    double peso=0,tallalongi=0;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_histor);
@@ -82,7 +82,7 @@ public class histor extends AppCompatActivity {
                 desvi.setTextColor(Color.rgb(2,119,189));
                 descri.setTextColor(Color.rgb(2,119,189));
                 SQLiteDatabase bdL=con.getReadableDatabase();
-                Cursor cursor = bdL.rawQuery("SELECT p.fnac,c.fecha,c.peso,c.talla,c.long fROM consulta c,paciente p WHERE p._id="+getIntent().getIntExtra("idpac",0)+" and c._id="+idh.get(position),null);
+                Cursor cursor = bdL.rawQuery("SELECT p.fnac,c.fecha,c.peso,c.tallalong fROM consulta c,paciente p WHERE p._id="+getIntent().getIntExtra("idpac",0)+" and c._id="+idh.get(position),null);
                 fecha nac=null;
                 if(cursor.moveToFirst()){
                     try {
@@ -96,34 +96,25 @@ public class histor extends AppCompatActivity {
                     } catch (ParseException e) {
                         Toast.makeText(histor.this, "error parse", Toast.LENGTH_SHORT).show();
                     }peso=cursor.getDouble(2);
-                    talla=cursor.getDouble(3);
-                    longi=cursor.getDouble(4);
-                    if(talla!=0){
+                    tallalongi=cursor.getDouble(3);
+                    if(meses>=24 && meses<=60){
                         llenar(getIntent().getIntExtra("idpac",0),con.getReadableDatabase());
-                        llenargraficas(titulo,desvi,descri,meses,talla,peso);
-                    }else {
+                        llenargraficas(titulo,desvi,descri,meses,tallalongi,peso);
+                    }if(meses>=0 && meses<=23){
                         nomtablas=new ArrayList<>();
                         tablas=new ArrayList<>();
-                        try {
-                            if(nac.getmonthslive(times)>=0 && nac.getmonthslive(times)<=23){
-                                nomtablas.add("longitud para la edad");
-                                nomtablas.add("peso para la edad");
-                                nomtablas.add("peso para la longitud");
-                                if(genero.equals("masculino")){
-                                    tablas.add(ope.getLE0_2nino());
-                                    tablas.add(ope.getPE0_2nino());
-                                    tablas.add(ope.getPL0_2nino());
-                                }else{
-                                    tablas.add(ope.getLE0_2nina());
-                                    tablas.add(ope.getPE0_2nina());
-                                    tablas.add(ope.getPL0_2nina());
-                                }
-                            }
-                        } catch (ParseException e) {
-                            Toast.makeText(histor.this, "PARSEEEEEEROOOOO", Toast.LENGTH_SHORT).show();
-                        }
-                        llenargraficas(titulo,desvi,descri,meses,longi,peso);
-
+                        nomtablas.add("longitud para la edad");
+                        nomtablas.add("peso para la edad");
+                        nomtablas.add("peso para la longitud");
+                        if(genero.equals("masculino")){
+                            tablas.add(ope.getLE0_2nino());
+                            tablas.add(ope.getPE0_2nino());
+                            tablas.add(ope.getPL0_2nino());
+                        }else{
+                            tablas.add(ope.getLE0_2nina());
+                            tablas.add(ope.getPE0_2nina());
+                            tablas.add(ope.getPL0_2nina());
+                        }llenargraficas(titulo,desvi,descri,meses,tallalongi,peso);
                     }
                 }bdL.close();
                 construirdialogo.setPositiveButton("siguiente",null);
@@ -138,20 +129,12 @@ public class histor extends AppCompatActivity {
 
                             @Override
                             public void onClick(View view) {
-
-
-                                        if(pos+1<tablas.size()){
-                                            pos++;
-                                        }else{
-                                            pos=0;
-                                        }plot.removeAllSeries();
-                                        if(talla!=0){
-                                            llenargraficas(titulo,desvi,descri,meses,talla,peso);
-                                        }else {
-                                            llenargraficas(titulo,desvi,descri,meses,longi,peso);
-                                        }
-
-
+                                if(pos+1<tablas.size()){
+                                    pos++;
+                                }else{
+                                    pos=0;
+                                }plot.removeAllSeries();
+                                llenargraficas(titulo,desvi,descri,meses,tallalongi,peso);
 
                             }
                         });
@@ -160,26 +143,17 @@ public class histor extends AppCompatActivity {
                             @Override
                             public void onClick(View view) {
                                 // recorremos las tablas hacia atras
-
-
-                                        if(pos-1>=0){
-                                            pos--;
-                                        }else{
-                                            pos=tablas.size()-1;
-                                        }plot.removeAllSeries();
-                                    if(talla!=0){
-                                        llenargraficas(titulo,desvi,descri,meses,talla,peso);
-                                    }else {
-                                        llenargraficas(titulo,desvi,descri,meses,longi,peso);
-                                    }
-                                    }
-
-
+                                if(pos-1>=0){
+                                    pos--;
+                                }else{
+                                    pos=tablas.size()-1;
+                                }plot.removeAllSeries();
+                                llenargraficas(titulo,desvi,descri,meses,tallalongi,peso);
+                            }
                         });
                     }
                 });
                 alertDialog.show();
-
             }
         });
     }
@@ -195,7 +169,6 @@ public class histor extends AppCompatActivity {
                             Context.LAYOUT_INFLATER_SERVICE);
                     return cursorinflater.inflate(R.layout.adapterhist,parent,false);
                 }
-
                 @Override
                 //seteamos los datos de nuestra base de datos en nuestro adapter
                 public void bindView(View view, Context context, Cursor cursor) {
@@ -204,8 +177,7 @@ public class histor extends AppCompatActivity {
                         idh.add(cursor.getInt(0));
                         String fecha=cursor.getString(2);
                         double peso=cursor.getDouble(3);
-                        double talla=cursor.getDouble(4);
-                        double longi=cursor.getDouble(5);
+                        double tallalongi=cursor.getDouble(4);
                         TextView fechat=view.findViewById(R.id.fechacon);
                         Date fechad=formato.parse(fecha);
                         Calendar c=Calendar.getInstance();
@@ -215,20 +187,18 @@ public class histor extends AppCompatActivity {
                         TextView pesot=view.findViewById(R.id.pesocon);
                         pesot.setText("PESO(Kg): "+peso);
                         TextView lott=view.findViewById(R.id.lotcon);
-                        if(talla==0){
-                            lott.setText("LONGITUD(cm): "+longi);
+                        if(fnaci.getmonthslive(fec)>=0 && fnaci.getmonthslive(fec)<=23){
+                            lott.setText("LONGITUD(cm): "+tallalongi);
                         }else{
-                            lott.setText("TALLA(cm): "+talla);
+                            lott.setText("TALLA(cm): "+tallalongi);
                         }
                     }catch (Exception e){
-
-                  }
-
+                        Toast.makeText(context, "no se pudieron obtener los datos", Toast.LENGTH_SHORT).show();
+                    }
                 }
             };bdL.close();
             listahist.setAdapter(adapter);
         }
-
     }
 
     private void llenar(int id, SQLiteDatabase bdL) {
@@ -349,7 +319,6 @@ public class histor extends AppCompatActivity {
         guardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                     try {
                         EditText xe=popupExerciseStatisticView.findViewById(R.id.edtitallaolong);
                         EditText ye=popupExerciseStatisticView.findViewById(R.id.editpeso);
@@ -358,25 +327,15 @@ public class histor extends AppCompatActivity {
                         SimpleDateFormat  format=new SimpleDateFormat("dd-MM-yyyy");
                         Date fechacon=format.parse(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString());
                         SQLiteDatabase bdW=con.getWritableDatabase();
-                        String sql="INSERT INTO  consulta (idpac,fecha,peso,talla,long) VALUES (?,?,?,?,?)";
+                        String sql="INSERT INTO  consulta (idpac,fecha,peso,tallalong) VALUES (?,?,?,?)";
                         SQLiteStatement insert = bdW.compileStatement(sql);
-                        if(fnaci.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString())>=0 && fnaci.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString())<=23){
-                            insert.clearBindings();
-                            insert.bindDouble(1,id);
-                            insert.bindString(2,format.format(fechacon));
-                            insert.bindDouble(3,y);
-                            insert.bindDouble(4,0);
-                            insert.bindDouble(5,x);
-                            insert.executeInsert();
-                        }else {
-                            insert.clearBindings();
-                            insert.bindDouble(1,id);
-                            insert.bindString(2,format.format(fechacon));
-                            insert.bindDouble(3,y);
-                            insert.bindDouble(4,x);
-                            insert.bindDouble(5,0);
-                            insert.executeInsert();
-                        }Toast.makeText(histor.this, "GUARDADO", Toast.LENGTH_SHORT).show();
+                        insert.clearBindings();
+                        insert.bindDouble(1,id);
+                        insert.bindString(2,format.format(fechacon));
+                        insert.bindDouble(3,y);
+                        insert.bindDouble(4,x);
+                        insert.executeInsert();
+                        Toast.makeText(histor.this, "GUARDADO", Toast.LENGTH_SHORT).show();
                         bdW.close();
                     }catch (ParseException e){
                         Toast.makeText(histor.this, "Datos invalidos", Toast.LENGTH_SHORT).show();
@@ -387,7 +346,6 @@ public class histor extends AppCompatActivity {
                     intent.putExtra("idpac",id);
                     startActivity(intent);
                 }
-
         });
         graficarx.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -404,7 +362,6 @@ public class histor extends AppCompatActivity {
                     descri.setTextColor(Color.rgb(2,119,189));
                     SQLiteDatabase bdL=con.getReadableDatabase();
                     final Cursor cursor = bdL.rawQuery("SELECT * fROM paciente WHERE _id="+id,null);
-
                     if(cursor.moveToFirst()){
                         try {
                             fecha edad=new fecha(cursor.getString(cursor.getColumnIndex("fnac")));
@@ -413,8 +370,7 @@ public class histor extends AppCompatActivity {
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
-                    }
-                    alertDialogBuilder.setPositiveButton("siguiente",null);
+                    }alertDialogBuilder.setPositiveButton("siguiente",null);
                     alertDialogBuilder.setNegativeButton("Anterior",null);
                     final AlertDialog alertDialog = alertDialogBuilder.create();
                     alertDialog.setView(popupExerciseStatisticView);
@@ -423,7 +379,6 @@ public class histor extends AppCompatActivity {
                         public void onShow(DialogInterface dialog) {
                             Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
                             button.setOnClickListener(new View.OnClickListener() {
-
                                 @Override
                                 public void onClick(View view) {
                                     if(cursor.moveToFirst()){
@@ -437,10 +392,9 @@ public class histor extends AppCompatActivity {
                                             }plot.removeAllSeries();
                                             llenargraficas(titulo,desvi,descri,edadenmesx,x,y);
                                         } catch (ParseException e) {
-                                            e.printStackTrace();
+                                            Toast.makeText(histor.this, "error al cargar las graficas", Toast.LENGTH_SHORT).show();
                                         }
                                     }
-
                                 }
                             });
                             Button button1= ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
@@ -527,6 +481,7 @@ public class histor extends AppCompatActivity {
                     String del="DELETE FROM consulta WHERE _id="+(idh.get(listahist.getPositionForView(view)))+" AND idpac="+id;
                     bdW.execSQL(del);
                     Toast.makeText(getApplicationContext(),"Borrado con exito",Toast.LENGTH_LONG).show();
+                    bdW.close();
                 }catch (Exception e){
                     Toast.makeText(getApplicationContext(),"Ups! error al borrar",Toast.LENGTH_LONG).show();
                 }Intent intent=new Intent(getApplicationContext(),histor.class);
@@ -649,7 +604,6 @@ public class histor extends AppCompatActivity {
         String fec=c.get(Calendar.DAY_OF_MONTH)+"-"+(c.get(Calendar.MONTH)+1)+"-"+c.get(Calendar.YEAR);
         return formato.parse(fec);
     }
-
     public void graficarhist(View view) {
         Toast.makeText(this, "FUNCION NO DISPONIBLE POR EL MOMENTO", Toast.LENGTH_LONG).show();
     }
