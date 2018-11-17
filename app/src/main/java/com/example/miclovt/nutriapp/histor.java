@@ -97,25 +97,8 @@ public class histor extends AppCompatActivity {
                         Toast.makeText(histor.this, "error parse", Toast.LENGTH_SHORT).show();
                     }peso=cursor.getDouble(2);
                     tallalongi=cursor.getDouble(3);
-                    if(meses>=24 && meses<=60){
-                        llenar(getIntent().getIntExtra("idpac",0),con.getReadableDatabase());
-                        llenargraficas(titulo,desvi,descri,meses,tallalongi,peso);
-                    }if(meses>=0 && meses<=23){
-                        nomtablas=new ArrayList<>();
-                        tablas=new ArrayList<>();
-                        nomtablas.add("longitud para la edad");
-                        nomtablas.add("peso para la edad");
-                        nomtablas.add("peso para la longitud");
-                        if(genero.equals("masculino")){
-                            tablas.add(ope.getLE0_2nino());
-                            tablas.add(ope.getPE0_2nino());
-                            tablas.add(ope.getPL0_2nino());
-                        }else{
-                            tablas.add(ope.getLE0_2nina());
-                            tablas.add(ope.getPE0_2nina());
-                            tablas.add(ope.getPL0_2nina());
-                        }llenargraficas(titulo,desvi,descri,meses,tallalongi,peso);
-                    }
+                    llenarcondicionado(meses);
+                    llenargraficas(titulo,desvi,descri,meses,tallalongi,peso);
                 }bdL.close();
                 construirdialogo.setPositiveButton("siguiente",null);
                 construirdialogo.setNegativeButton("Anterior",null);
@@ -200,7 +183,46 @@ public class histor extends AppCompatActivity {
             listahist.setAdapter(adapter);
         }
     }
+    private void llenarcondicionado(int mesex){
+        nomtablas=new ArrayList<>();
+        tablas=new ArrayList<>();
+        if(mesex>=0 && mesex<=23){
+            nomtablas.add("longitud para la edad");
+            nomtablas.add("peso para la edad");
+            nomtablas.add("peso para la longitud");
+            if(genero.equals("masculino")){
+                tablas.add(ope.getLE0_2nino());
+                tablas.add(ope.getPE0_2nino());
+                tablas.add(ope.getPL0_2nino());
+            }else{
+                tablas.add(ope.getLE0_2nina());
+                tablas.add(ope.getPE0_2nina());
+                tablas.add(ope.getPL0_2nina());
+            }
+        }if(mesex>=24 && mesex<=60){
+            nomtablas.add("peso para la talla");
+            nomtablas.add("talla para la edad");
+            if(genero.equals("masculino")){
+                tablas.add(ope.getPT2_5nino());
+                tablas.add(ope.getTE2_5nino());
+            }else{
+                tablas.add(ope.getPT2_5nina());
+                tablas.add(ope.getTE2_5nina());
+            }
+        }if(mesex>=61 && mesex<=228){
+            nomtablas.add("IMC para la edad");
+            nomtablas.add("talla para la edad");
+            if(genero.equals("masculino")){
+                tablas.add(ope.getIE5_19hombre());
+                tablas.add(new ope().getTE5_19hombre());
+            }else{
+                tablas.add(ope.getIE5_19mujer());
+                tablas.add(new ope().getTE5_19mujer());
+            }
+        }if(mesex>228){
 
+        }
+    }
     private void llenar(int id, SQLiteDatabase bdL) {
         nomtablas=new ArrayList<>();
         tablas=new ArrayList<>();
@@ -236,30 +258,7 @@ public class histor extends AppCompatActivity {
             edaaad.setText("Edad:"+edad);
             i.setImageBitmap(img1);
             fnaci=edadtotal;
-            if(edadtotal.getmonthslive()>=0 && edadtotal.getmonthslive()<=23){
-                nomtablas.add("longitud para la edad");
-                nomtablas.add("peso para la edad");
-                nomtablas.add("peso para la longitud");
-                if(cursor.getString(cursor.getColumnIndex("genero")).equals("masculino")){
-                    tablas.add(ope.getLE0_2nino());
-                    tablas.add(ope.getPE0_2nino());
-                    tablas.add(ope.getPL0_2nino());
-                }else{
-                    tablas.add(ope.getLE0_2nina());
-                    tablas.add(ope.getPE0_2nina());
-                    tablas.add(ope.getPL0_2nina());
-                }
-            }else{
-                nomtablas.add("peso para la talla");
-                nomtablas.add("talla para la edad");
-                if(cursor.getString(cursor.getColumnIndex("genero")).equals("masculino")){
-                    tablas.add(ope.getPT2_5nino());
-                    tablas.add(ope.getTE2_5nino());
-                }else{
-                    tablas.add(ope.getPT2_5nina());
-                    tablas.add(ope.getTE2_5nina());
-                }
-            }
+            llenarcondicionado(edadtotal.getmonthslive());
         }
     }
 
@@ -337,14 +336,13 @@ public class histor extends AppCompatActivity {
                         insert.executeInsert();
                         Toast.makeText(histor.this, "GUARDADO", Toast.LENGTH_SHORT).show();
                         bdW.close();
-                    }catch (ParseException e){
+                        Intent intent=new Intent(getApplication(),histor.class);
+                        intent.putExtra("idpac",id);
+                        startActivity(intent);
+                    }catch (Exception e){
                         Toast.makeText(histor.this, "Datos invalidos", Toast.LENGTH_SHORT).show();
-                    }catch (SQLException e){
-                        Toast.makeText(histor.this, "Ups! error al guardar", Toast.LENGTH_SHORT).show();
                     }
-                    Intent intent=new Intent(getApplication(),histor.class);
-                    intent.putExtra("idpac",id);
-                    startActivity(intent);
+
                 }
         });
         graficarx.setOnClickListener(new View.OnClickListener() {
@@ -366,6 +364,7 @@ public class histor extends AppCompatActivity {
                         try {
                             fecha edad=new fecha(cursor.getString(cursor.getColumnIndex("fnac")));
                             int edadenmesx= edad.getmonthslive(diac.getText().toString()+"-"+mesc.getText().toString()+"-"+anioc.getText().toString());
+                            llenarcondicionado(edadenmesx);
                             llenargraficas(titulo,desvi,descri,edadenmesx,x,y);
                         } catch (ParseException e) {
                             e.printStackTrace();
@@ -458,7 +457,9 @@ public class histor extends AppCompatActivity {
         graph.getViewport().setScalableY(true);
         DataPoint p=new DataPoint(x,y);
         PointsGraphSeries<DataPoint> seriesx = new PointsGraphSeries<>();
+
         seriesx.appendData(p,true,1);
+
         graph.addSeries(seriesx);
         seriesx.setShape(PointsGraphSeries.Shape.POINT);
     }
@@ -510,27 +511,26 @@ public class histor extends AppCompatActivity {
             alertDialog.show();
         }
     }public void llenargraficas(TextView titulo, TextView desvi, TextView descri, int edadenmesx,double x,double y){
-        try{
-            if(edadenmesx>=0 && edadenmesx<=23){
-                switch (pos){
-                    case 0: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","longitud");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.long_edad02(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.long_edad02(edadenmesx,x,genero))); break;
-                    case 1: graficar(tablas.get(pos),plot,edadenmesx,y,"meses","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_edad02(edadenmesx,y,genero));descri.setText(prescripcion(1,ope.peso_edad02(edadenmesx,y,genero))); break;
-                    case 2: graficar(tablas.get(pos),plot,x,y,"longitud","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_long02(x,y,genero));descri.setText(prescripcion(1,ope.peso_long02(x,y,genero))); break;
-                    default: break;
-                }
-            }if(edadenmesx>=24 && edadenmesx<=60){
-                switch (pos){
-                    case 0: graficar(tablas.get(pos),plot,x,y,"talla","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_talla25(x,y,genero));descri.setText(prescripcion(1,ope.peso_talla25(x,y,genero))); break;
-                    case 1: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad25(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad25(edadenmesx,x,genero))); break;
-                    default: break;
-                }
-            }if(edadenmesx>60){
-                Toast.makeText(this, "LA APLICACION SOLO FUNCIONA PARA NIÑOS DE 0 A 5 AÑOS", Toast.LENGTH_LONG).show();
+        if(edadenmesx>=0 && edadenmesx<=23){
+            switch (pos){
+                case 0: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","longitud");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.long_edad02(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.long_edad02(edadenmesx,x,genero))); break;
+                case 1: graficar(tablas.get(pos),plot,edadenmesx,y,"meses","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_edad02(edadenmesx,y,genero));descri.setText(prescripcion(1,ope.peso_edad02(edadenmesx,y,genero))); break;
+                case 2: graficar(tablas.get(pos),plot,x,y,"longitud","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_long02(x,y,genero));descri.setText(prescripcion(1,ope.peso_long02(x,y,genero))); break;
+                default: break;
             }
-        }catch (Exception e){
-            Toast.makeText(this, "los datos son invalidos debido al cambio de fecha de nacimiento,borre los datos", Toast.LENGTH_SHORT).show();
+        }if(edadenmesx>=24 && edadenmesx<=60){
+            switch (pos){
+                case 0: graficar(tablas.get(pos),plot,x,y,"talla","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_talla25(x,y,genero));descri.setText(prescripcion(1,ope.peso_talla25(x,y,genero))); break;
+                case 1: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad25(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad25(edadenmesx,x,genero))); break;
+                default: break;
+            }
+        }if(edadenmesx>60 && edadenmesx<=228)switch (pos){
+            case 0: graficar(tablas.get(pos),plot,edadenmesx,(y/((x/100)*(x/100))),"meses","IMC");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.IMC_edad519(edadenmesx,(y/((x/100)*(x/100))),genero));descri.setText(prescripcion(1,ope.IMC_edad519(edadenmesx,(y/((x/100)*(x/100))),genero))); break;
+            case 1: graficar(tablas.get(pos),plot,edadenmesx, x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad519(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad519(edadenmesx,x,genero))); break;
+            default: break;
+        }if(edadenmesx>228){
+            Toast.makeText(this, "LA APLICACION SOLO FUNCIONA PARA NIÑOS DE 0 A 19 AÑOS", Toast.LENGTH_LONG).show();
         }
-
     }public String prescripcion(int sw,double desv){
         DecimalFormat num=new DecimalFormat("#,##");
         desv=Double.parseDouble(num.format(desv));
@@ -590,11 +590,9 @@ public class histor extends AppCompatActivity {
                     }if(desv<-3){
                         return "DESNUTRICION AGUDA GRAVE Y/O ANEMIA GRAVE";
                     }
-                };
-                default: break;
+                };default: break;
             }
         }
-
         return "";
     }public Date fahora() throws ParseException {
         SimpleDateFormat formato=new SimpleDateFormat("dd-MM-yyyy");

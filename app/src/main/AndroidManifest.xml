@@ -19,6 +19,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".histor" />
+
         <activity android:name=".registro" />
     </application>
 
