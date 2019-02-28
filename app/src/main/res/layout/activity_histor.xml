@@ -78,15 +78,17 @@
         android:layout_height="50dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginRight="100dp"
+        android:layout_marginRight="20dp"
         android:layout_marginBottom="30dp"
         android:onClick="nuevahist"
         android:cropToPadding="false"
         app:srcCompat="@drawable/plus_icon"
         tools:layout_editor_absoluteX="50dp"
-        tools:layout_editor_absoluteY="50dp" />
+        tools:layout_editor_absoluteY="50dp"
 
-    <ImageView
+        />
+    <!--android:layout_marginRight="100dp"-->
+    <!--<ImageView
         android:id="@+id/graf"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -99,5 +101,5 @@
         app:srcCompat="@drawable/graph_icon"
         tools:layout_editor_absoluteX="50dp"
         tools:layout_editor_absoluteY="50dp" />
-
+    -->
 </RelativeLayout>

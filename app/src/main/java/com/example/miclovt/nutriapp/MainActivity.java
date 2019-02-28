@@ -65,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
         lv_pacientes=(ListView)findViewById(R.id.listahoy) ;
         con = new base_de_datos(this,"bdpacientes",null,1);
         llenarlist();
-        mensajeerror();
-        Button buttonRequest = findViewById(R.id.button);
+
+        /*Button buttonRequest = findViewById(R.id.button);
         buttonRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,7 +103,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
-        });
+        });*/
+     //Pedidiendo permisos de escritura y lectura
     }private void requestStoragePermission(final int i) {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                     new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
     }
-
+    //comprobamos que los permisos esten habilitados
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1)  {
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
+    //Llenamos la lista con los pacientes
     private void llenarlist() {
         SQLiteDatabase bdL=con.getReadableDatabase();
         cursor = bdL.rawQuery("SELECT * fROM paciente ",null);
@@ -208,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+    //borramos a un paciente de la base de datos
     public void borrar(final View view){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setMessage("¿Esta seguro de borrar al paciente?");
@@ -230,11 +232,13 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
-
+    //paso a la pantalla registro paciente
     public  void  reg(View view){
         Intent pass=new Intent(this, registro.class);
         startActivity(pass);
-    }public  void  busqresult(View view){
+    }
+    //Se muestran los resultados de los pacientes que coincidan con el nombre despues de precionar el boton de busqueda
+    public  void  busqresult(View view){
         EditText busqe=(EditText) findViewById(R.id.editText4);
         String busq=busqe.getText().toString();
         busq.toLowerCase();
@@ -296,26 +300,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    //sobreacrgamos el metodo onBackPressed paara que la aplicacion termine
     @Override
     public void onBackPressed() {
         Log.d("CDA", "onBackPressed Called");
         moveTaskToBack(true);
         finish();
 
-    }public void mensajeerror(){
-        long installed=100000000;
-        long millisStart = Calendar.getInstance().getTimeInMillis();
-        try {
-            installed = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).firstInstallTime;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (millisStart-installed>= 172800000){
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setMessage("APLICACION CADUCADA");
-            alertDialogBuilder.setCancelable(false);
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
-        }
     }
 }

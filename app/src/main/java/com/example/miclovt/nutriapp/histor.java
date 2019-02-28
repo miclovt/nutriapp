@@ -69,6 +69,7 @@ public class histor extends AppCompatActivity {
         llenarlista(id,bdL);
         bdL.close();
         listahist=findViewById(R.id.listahist);
+        //nos muestra las raficas y diagnosticos de la consulta seleccionada
         listahist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -140,6 +141,7 @@ public class histor extends AppCompatActivity {
             }
         });
     }
+    //Llenamos la lista con el historial del paciente
     private void llenarlista(int id, SQLiteDatabase bdL) {
         Cursor cursor = bdL.rawQuery("SELECT * fROM consulta WHERE idpac="+id+" ORDER BY fecha",null);
         if(cursor.moveToFirst()){
@@ -183,6 +185,7 @@ public class histor extends AppCompatActivity {
             listahist.setAdapter(adapter);
         }
     }
+    //Seleccionamos las tabla que se utilizara dependiendo de la edad del paciente
     private void llenarcondicionado(int mesex){
         nomtablas=new ArrayList<>();
         tablas=new ArrayList<>();
@@ -223,6 +226,7 @@ public class histor extends AppCompatActivity {
 
         }
     }
+    //lenamos los datos del paciente que se muestran en la parte superior
     private void llenar(int id, SQLiteDatabase bdL) {
         nomtablas=new ArrayList<>();
         tablas=new ArrayList<>();
@@ -261,7 +265,7 @@ public class histor extends AppCompatActivity {
             llenarcondicionado(edadtotal.getmonthslive());
         }
     }
-
+    //adicionamos una nueva consulta o historia
     public void  nuevahist(View cont) throws ParseException {
         final View popupExerciseStatisticView = View.inflate(cont.getContext(), R.layout.alertconsulta, null);
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(cont.getContext());
@@ -315,6 +319,7 @@ public class histor extends AppCompatActivity {
                 }
             }
         });
+        //guardamos la historia o consulta que se realizo
         guardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -345,6 +350,7 @@ public class histor extends AppCompatActivity {
 
                 }
         });
+        // se muestran las graficas de control de la persona en la consulta realizada
         graficarx.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -429,39 +435,42 @@ public class histor extends AppCompatActivity {
         alertDialog.setView(popupExerciseStatisticView);
         alertDialog.show();
     }
+    //graficamos las curvas y el punto que referencia al paciente para una sola tabla
     public void graficar(double [][] data,com.jjoe64.graphview.GraphView  graph,double x,double y,String ex,String ey){
-        DataPoint puntos[]=new  DataPoint[data.length];
-        graph.getGridLabelRenderer().setHorizontalAxisTitle(ex);
-        graph.getGridLabelRenderer().setVerticalAxisTitle(ey);
-        graph.setTitleTextSize(30);
-        LineGraphSeries<DataPoint> series;
-        for(int j=1;j<=7;j++){
-            for (int i=0;i<data.length;i++) {
-                puntos[i] = new DataPoint(data[i][0], data[i][j]);
-            }series= new LineGraphSeries<>(puntos);
-            if(j==1 || j==7){
-                series.setColor(Color.RED);
-            }if(j==2 || j==6){
-                series.setColor(Color.YELLOW);
-            }if(j==3 || j==5){
-                series.setColor(Color.GREEN);
-            }graph.addSeries(series);
-        }graph.computeScroll();
-        graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMaxY(data[(data.length)-1][7]);
-        graph.getViewport().setMinY(data[0][1]);
-        graph.getViewport().setXAxisBoundsManual(true);
-        graph.getViewport().setMinX(data[0][0]);
-        graph.getViewport().setMaxX(data[(data.length)-1][0]);
-        graph.getViewport().setScalable(true);
-        graph.getViewport().setScalableY(true);
-        DataPoint p=new DataPoint(x,y);
-        PointsGraphSeries<DataPoint> seriesx = new PointsGraphSeries<>();
-
-        seriesx.appendData(p,true,1);
-
-        graph.addSeries(seriesx);
-        seriesx.setShape(PointsGraphSeries.Shape.POINT);
+        try{
+            DataPoint puntos[]=new  DataPoint[data.length];
+            graph.getGridLabelRenderer().setHorizontalAxisTitle(ex);
+            graph.getGridLabelRenderer().setVerticalAxisTitle(ey);
+            graph.setTitleTextSize(30);
+            LineGraphSeries<DataPoint> series;
+            for(int j=1;j<=7;j++){
+                for (int i=0;i<data.length;i++) {
+                    puntos[i] = new DataPoint(data[i][0], data[i][j]);
+                }series= new LineGraphSeries<>(puntos);
+                if(j==1 || j==7){
+                    series.setColor(Color.RED);
+                }if(j==2 || j==6){
+                    series.setColor(Color.YELLOW);
+                }if(j==3 || j==5){
+                    series.setColor(Color.GREEN);
+                }graph.addSeries(series);
+            }graph.computeScroll();
+            graph.getViewport().setYAxisBoundsManual(true);
+            graph.getViewport().setMaxY(data[(data.length)-1][7]);
+            graph.getViewport().setMinY(data[0][1]);
+            graph.getViewport().setXAxisBoundsManual(true);
+            graph.getViewport().setMinX(data[0][0]);
+            graph.getViewport().setMaxX(data[(data.length)-1][0]);
+            graph.getViewport().setScalable(true);
+            graph.getViewport().setScalableY(true);
+            DataPoint p=new DataPoint(x,y);
+            PointsGraphSeries<DataPoint> seriesx = new PointsGraphSeries<>();
+            seriesx.appendData(p,true,1);
+            graph.addSeries(seriesx);
+            seriesx.setShape(PointsGraphSeries.Shape.POINT);
+        }catch (Exception e){
+            Toast.makeText(this, "valores fuera de los rangos establecidos", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -470,8 +479,9 @@ public class histor extends AppCompatActivity {
         Intent setIntent = new Intent(this,MainActivity.class);
         finish();
         startActivity(setIntent);
-
-    }public void borrarc(final View view){
+    }
+    //borramos una historia o consulta
+    public void borrarc(final View view){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setMessage("¿Esta seguro de borrar esta consulta?");
         alertDialogBuilder.setPositiveButton("si",new DialogInterface.OnClickListener() {
@@ -495,43 +505,36 @@ public class histor extends AppCompatActivity {
         alertDialog.show();
 
     }
-    public void mensajeerror(){
-        long installed=100000000;
-        long millisStart = Calendar.getInstance().getTimeInMillis();
-        try {
-            installed = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).firstInstallTime;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (millisStart-installed>=10000){
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setMessage("APLICACION CADUCADA");
-            alertDialogBuilder.setCancelable(false);
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
-        }
-    }public void llenargraficas(TextView titulo, TextView desvi, TextView descri, int edadenmesx,double x,double y){
-        if(edadenmesx>=0 && edadenmesx<=23){
-            switch (pos){
-                case 0: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","longitud");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.long_edad02(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.long_edad02(edadenmesx,x,genero))); break;
-                case 1: graficar(tablas.get(pos),plot,edadenmesx,y,"meses","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_edad02(edadenmesx,y,genero));descri.setText(prescripcion(1,ope.peso_edad02(edadenmesx,y,genero))); break;
-                case 2: graficar(tablas.get(pos),plot,x,y,"longitud","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_long02(x,y,genero));descri.setText(prescripcion(1,ope.peso_long02(x,y,genero))); break;
+    //llenamos todas las grafcas que corresponden a la edad que tenia el paciente en la consulta
+    // con su respectivo titulo y leyendas de los ejes
+    public void llenargraficas(TextView titulo, TextView desvi, TextView descri, int edadenmesx,double x,double y){
+        try{
+            if(edadenmesx>=0 && edadenmesx<=23){
+                switch (pos){
+                    case 0: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","longitud");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.long_edad02(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.long_edad02(edadenmesx,x,genero))); break;
+                    case 1: graficar(tablas.get(pos),plot,edadenmesx,y,"meses","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_edad02(edadenmesx,y,genero));descri.setText(prescripcion(1,ope.peso_edad02(edadenmesx,y,genero))); break;
+                    case 2: graficar(tablas.get(pos),plot,x,y,"longitud","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_long02(x,y,genero));descri.setText(prescripcion(1,ope.peso_long02(x,y,genero))); break;
+                    default: break;
+                }
+            }if(edadenmesx>=24 && edadenmesx<=60){
+                switch (pos){
+                    case 0: graficar(tablas.get(pos),plot,x,y,"talla","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_talla25(x,y,genero));descri.setText(prescripcion(1,ope.peso_talla25(x,y,genero))); break;
+                    case 1: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad25(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad25(edadenmesx,x,genero))); break;
+                    default: break;
+                }
+            }if(edadenmesx>60 && edadenmesx<=228)switch (pos){
+                case 0: graficar(tablas.get(pos),plot,edadenmesx,(y/((x/100)*(x/100))),"meses","IMC");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.IMC_edad519(edadenmesx,(y/((x/100)*(x/100))),genero));descri.setText(prescripcion(3,ope.IMC_edad519(edadenmesx,(y/((x/100)*(x/100))),genero))); break;
+                case 1: graficar(tablas.get(pos),plot,edadenmesx, x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad519(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad519(edadenmesx,x,genero))); break;
                 default: break;
+            }if(edadenmesx>228){
+                Toast.makeText(this, "LA APLICACION SOLO FUNCIONA PARA NIÑOS DE 0 A 19 AÑOS", Toast.LENGTH_LONG).show();
             }
-        }if(edadenmesx>=24 && edadenmesx<=60){
-            switch (pos){
-                case 0: graficar(tablas.get(pos),plot,x,y,"talla","peso");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.peso_talla25(x,y,genero));descri.setText(prescripcion(1,ope.peso_talla25(x,y,genero))); break;
-                case 1: graficar(tablas.get(pos),plot,edadenmesx,x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad25(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad25(edadenmesx,x,genero))); break;
-                default: break;
-            }
-        }if(edadenmesx>60 && edadenmesx<=228)switch (pos){
-            case 0: graficar(tablas.get(pos),plot,edadenmesx,(y/((x/100)*(x/100))),"meses","IMC");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.IMC_edad519(edadenmesx,(y/((x/100)*(x/100))),genero));descri.setText(prescripcion(1,ope.IMC_edad519(edadenmesx,(y/((x/100)*(x/100))),genero))); break;
-            case 1: graficar(tablas.get(pos),plot,edadenmesx, x,"meses","talla");titulo.setText(nomtablas.get(pos));desvi.setText("Desviacion:"+ope.talla_edad519(edadenmesx,x,genero));descri.setText(prescripcion(0,ope.talla_edad519(edadenmesx,x,genero))); break;
-            default: break;
-        }if(edadenmesx>228){
-            Toast.makeText(this, "LA APLICACION SOLO FUNCIONA PARA NIÑOS DE 0 A 19 AÑOS", Toast.LENGTH_LONG).show();
+        }catch (Exception e){
+            Toast.makeText(this, "valores fuera de los rangos establecidos", Toast.LENGTH_SHORT).show();
         }
-    }public String prescripcion(int sw,double desv){
+    }
+    //asignamos las prescripciones segun el valor del z-score
+    public String prescripcion(int sw,double desv){
         DecimalFormat num=new DecimalFormat("#,##");
         desv=Double.parseDouble(num.format(desv));
         if(not==0){
@@ -565,6 +568,24 @@ public class histor extends AppCompatActivity {
                         return "DESNUTRICION SEVERA";
                     }
                 };
+                case 3:{
+                    if(desv>3){
+                        return "OBESIDAD";
+                    }if(desv<=3 && desv>2){
+                        return "RIESGO DE OBESIDAD";
+                    }if(desv<=2 && desv>1){
+                        return "SOBREPESO";
+                    }if(desv>-1 && desv<=1){
+                        return "PESO NORMAL";
+                    }if(desv>-2 && desv<=-1){
+                        return "DESNUTRICION AGUDA LEVE";
+                    }if(desv>-3 && desv<=-2){
+                        return "DESNUTRICION AGUDA MODERADA";
+                    }if(desv<=-3){
+                        return "DESNUTRICION AGUDA SEVERA";
+                    }
+                };
+
                 default: break;
             }
         }else{
@@ -590,11 +611,30 @@ public class histor extends AppCompatActivity {
                     }if(desv<-3){
                         return "DESNUTRICION AGUDA GRAVE Y/O ANEMIA GRAVE";
                     }
-                };default: break;
+                };case 3:{
+                    if(desv>3){
+                        return "OBESIDAD";
+                    }if(desv<=3 && desv>2){
+                        return "RIESGO DE OBESIDAD";
+                    }if(desv<=2 && desv>1){
+                        return "SOBREPESO";
+                    }if(desv>-1 && desv<=1){
+                        return "PESO NORMAL";
+                    }if(desv>-2 && desv<=-1){
+                        return "DESNUTRICION AGUDA LEVE";
+                    }if(desv>-3 && desv<=-2){
+                        return "DESNUTRICION AGUDA MODERADA";
+                    }if(desv<=-3){
+                        return "DESNUTRICION AGUDA SEVERA";
+                    }
+                };
+                default: break;
             }
         }
         return "";
-    }public Date fahora() throws ParseException {
+    }
+    //obtiene la fecha de hoy
+    public Date fahora() throws ParseException {
         SimpleDateFormat formato=new SimpleDateFormat("dd-MM-yyyy");
         Date ahora=new Date();
         Calendar c=Calendar.getInstance();

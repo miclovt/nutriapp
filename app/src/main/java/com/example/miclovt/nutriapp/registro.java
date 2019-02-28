@@ -47,7 +47,6 @@ public class registro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registro);
-        //mensajeerror();
         con = new base_de_datos(this,"bdpacientes",null,1);
         Spinner spinner = findViewById(R.id.spinner);
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, gen));
@@ -79,7 +78,7 @@ public class registro extends AppCompatActivity {
             }
         });
     }
-
+    //Editamos los datos de un paciente mostrando los que tenia inicialmente
     private void editar(Spinner spinner, int idpac) throws ParseException {
         SQLiteDatabase bdl=con.getReadableDatabase();
         Cursor cursor=bdl.rawQuery("SELECT * FROM paciente WHERE _id="+idpac,null);
@@ -107,7 +106,7 @@ public class registro extends AppCompatActivity {
             anioText.setText(calendar.get(Calendar.YEAR)+"");
         }
     }
-
+    // colocamos la foto en el image view
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -124,6 +123,7 @@ public class registro extends AppCompatActivity {
         startActivity(setIntent);
 
     }
+    //verificamos que la fecha este correcta y exista
     public boolean validarFecha(String fecha) {
         try {
             SimpleDateFormat formatoFecha = new SimpleDateFormat("dd-MM-yyyy");
@@ -143,6 +143,7 @@ public class registro extends AppCompatActivity {
             return false;
         }
     }
+    //llenamos los datos para un nuevo paciente
     public void cargar(View view){
         String op="";
         //obtenemos la imagen del imageviewcircular
@@ -217,33 +218,6 @@ public class registro extends AppCompatActivity {
             }
         }else{
             Toast.makeText(this, "hay campos vacios que debe completar", Toast.LENGTH_SHORT).show();
-        }
-    }public void mensajeerror(){
-        long installed=100000000;
-        long millisStart = Calendar.getInstance().getTimeInMillis();
-        try {
-            installed = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).firstInstallTime;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (millisStart-installed>=10000){
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setMessage("APLICACION CADUCADA");
-            alertDialogBuilder.setPositiveButton("yes",new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface arg0, int arg1) {
-                    mensajeerror();
-                }
-            });
-            alertDialogBuilder.setNegativeButton("No",new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    mensajeerror();
-                }
-            });
-            alertDialogBuilder.setCancelable(false);
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
         }
     }
 }
